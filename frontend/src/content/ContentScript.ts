@@ -1,13 +1,28 @@
-console.log("AI Accessibility Assistant content script loaded");
+type PageImage = {
+  src: string;
+  alt: string;
+  title: string;
+  width: number;
+  height: number;
+};
 
-const images = Array.from(document.querySelectorAll("img"));
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === "GET_IMAGES") {
+    const images: PageImage[] = Array.from(document.querySelectorAll("img"))
+      .filter((image) => image.src)
+      .map((image) => ({
+        src: image.src,
+        alt: image.alt || "",
+        title: image.title || "",
+        width: image.width,
+        height: image.height,
+      }));
 
-const imageData = images.map((image) => ({
-  src: image.src,
-  alt: image.alt,
-  title: image.title,
-  width: image.width,
-  height: image.height,
-}));
+    sendResponse({
+      images,
+      count: images.length,
+    });
+  }
 
-console.log("Images found on page:", imageData);
+  return true;
+});
